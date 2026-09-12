@@ -1032,13 +1032,13 @@ notifyError:
 int
 enet_peer_send_fast(ENetPeer * peer, enet_uint8 channelID, const void * data, size_t dataLength, enet_uint32 flags)
 {
-    ENetChannel * channel;
-    ENetProtocol command;
-
     if (peer -> state != ENET_PEER_STATE_CONNECTED ||
         channelID >= peer -> channelCount ||
         dataLength > peer -> host -> maximumPacketSize)
       return -1;
+
+    ENetChannel * channel;
+    ENetProtocol command;
 
     channel = & peer -> channels [channelID];
     
@@ -1083,6 +1083,41 @@ enet_peer_send_fast(ENetPeer * peer, enet_uint8 channelID, const void * data, si
        enet_free(packet);
        return -1;
     }
+
+    return 0;
+}
+
+int
+enet_peer_relay_packet(ENetPeer * peer, enet_uint8 channelID, ENetPacket * packet)
+{
+    if (peer -> state != ENET_PEER_STATE_CONNECTED || 
+        channelID >= peer -> channelCount || 
+        packet == NULL)
+        return -1;
+
+    ENetChannel * channel = & peer -> channels [channelID];
+    ENetProtocol command;
+
+    command.header.channelID = channelID;
+
+    if ((packet -> flags & (ENET_PACKET_FLAG_RELIABLE | ENET_PACKET_FLAG_UNSEQUENCED)) == ENET_PACKET_FLAG_UNSEQUENCED)
+    {
+       command.header.command = ENET_PROTOCOL_COMMAND_SEND_UNSEQUENCED | ENET_PROTOCOL_COMMAND_FLAG_UNSEQUENCED;
+       command.sendUnsequenced.dataLength = ENET_HOST_TO_NET_16 (packet -> dataLength);
+    }
+    else if (packet -> flags & ENET_PACKET_FLAG_RELIABLE || channel -> outgoingUnreliableSequenceNumber >= 0xFFFF)
+    {
+       command.header.command = ENET_PROTOCOL_COMMAND_SEND_RELIABLE | ENET_PROTOCOL_COMMAND_FLAG_ACKNOWLEDGE;
+       command.sendReliable.dataLength = ENET_HOST_TO_NET_16 (packet -> dataLength);
+    }
+    else
+    {
+       command.header.command = ENET_PROTOCOL_COMMAND_SEND_UNRELIABLE;
+       command.sendUnreliable.dataLength = ENET_HOST_TO_NET_16 (packet -> dataLength);
+    }
+
+    if (enet_peer_queue_outgoing_command (peer, & command, packet, 0, packet -> dataLength) == NULL)
+       return -1;
 
     return 0;
 }
