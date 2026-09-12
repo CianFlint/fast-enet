@@ -223,7 +223,7 @@ enet_peer_send (ENetPeer * peer, enet_uint8 channelID, ENetPacket * packet)
 }
 
 int
-enet_peer_send_fast(ENetPeer * peer, enet_uint8 channelID, const void * data, size_t dataLength, enet_uint32 flags)
+enet_peer_send_fast (ENetPeer * peer, enet_uint8 channelID, const void * data, size_t dataLength, enet_uint32 flags)
 {
     if (peer -> state != ENET_PEER_STATE_CONNECTED ||
         channelID >= peer -> channelCount ||
@@ -281,7 +281,7 @@ enet_peer_send_fast(ENetPeer * peer, enet_uint8 channelID, const void * data, si
 }
 
 int
-enet_peer_relay_packet(ENetPeer * peer, enet_uint8 channelID, ENetPacket * packet)
+enet_peer_relay_packet (ENetPeer * peer, enet_uint8 channelID, ENetPacket * packet)
 {
     if (peer -> state != ENET_PEER_STATE_CONNECTED || 
         channelID >= peer -> channelCount || 
@@ -313,6 +313,11 @@ enet_peer_relay_packet(ENetPeer * peer, enet_uint8 channelID, ENetPacket * packe
        return -1;
 
     return 0;
+}
+
+int
+enet_test_minimal (int value) {
+    return value + 1;
 }
 
 /** Attempts to dequeue any incoming queued packet.
