@@ -1027,8 +1027,6 @@ notifyError:
     return NULL;
 }
 
-/** @} */
-
 int
 enet_peer_send_fast(ENetPeer * peer, enet_uint8 channelID, const void * data, size_t dataLength, enet_uint32 flags)
 {
@@ -1121,3 +1119,5 @@ enet_peer_relay_packet(ENetPeer * peer, enet_uint8 channelID, ENetPacket * packe
 
     return 0;
 }
+
+/** @} */
